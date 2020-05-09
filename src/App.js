@@ -1,26 +1,39 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import { Switch, Route } from "react-router-dom";
+import ListContacts from "./ListContacts";
+import CreateContact from "./CreateContact";
+import * as ContactsAPI from "./utils/ContactsAPI";
 
-function App() {
+const App = () => {
+  const [contacts, setContacts] = useState([]);
+
+  useEffect(() => {
+    ContactsAPI.getAll().then((contacts) => setContacts(contacts));
+  });
+
+  const removeContact = (contact) => {
+    setContacts(contacts.filter((c) => c.id !== contact.id));
+    ContactsAPI.remove(contact);
+  };
+
+  const createContact = (contact) => {
+    ContactsAPI.create(contact).then(setContacts(contacts.concat([contact])));
+  };
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Switch>
+      <Route exact path="/">
+        <ListContacts contacts={contacts} onDeleteContact={removeContact} />
+      </Route>
+
+      <Route path="/create">
+        <CreateContact
+          onCreateContact={(contact) => {
+            createContact(contact);
+          }}
+        />
+      </Route>
+    </Switch>
   );
-}
+};
 
 export default App;
